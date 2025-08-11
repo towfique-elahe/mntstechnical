@@ -203,3 +203,29 @@ add_action('pre_get_posts', function ($q) {
         }
     }
 });
+
+/**
+ * Enable Elementor editing for Service + Location CPTs
+ */
+function mnts_enable_elementor_for_service_location() {
+    // Elementor stores allowed post types in this option
+    $supported = get_option('elementor_cpt_support');
+    if ( ! is_array($supported) ) {
+        $supported = ['post', 'page']; // Elementor defaults
+    }
+
+    $needed = ['service', 'location'];
+    $new = array_unique( array_merge( $supported, $needed ) );
+
+    if ( $new !== $supported ) {
+        update_option( 'elementor_cpt_support', $new );
+    }
+
+    // Ensure these CPTs have the 'editor' feature (required by Elementor)
+    add_post_type_support( 'service', 'editor' );
+    add_post_type_support( 'location', 'editor' );
+}
+// Run in a few safe spots so it sticks
+add_action( 'init', 'mnts_enable_elementor_for_service_location', 20 );
+add_action( 'admin_init', 'mnts_enable_elementor_for_service_location' );
+add_action( 'after_switch_theme', 'mnts_enable_elementor_for_service_location' );
