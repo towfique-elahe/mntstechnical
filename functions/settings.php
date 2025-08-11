@@ -191,3 +191,15 @@ function mntstechnical_widgets_init() {
     ) );
 }
 add_action( 'widgets_init', 'mntstechnical_widgets_init' );
+
+/**
+ * Include Service + Location in category/tag archives
+ */
+add_action('pre_get_posts', function ($q) {
+    if ( $q->is_main_query() && ! is_admin() && ( $q->is_category() || $q->is_tag() ) ) {
+        $types = (array) $q->get('post_type');
+        if ( empty($types) || $types === ['post'] ) {
+            $q->set('post_type', ['post','service','location']);
+        }
+    }
+});
