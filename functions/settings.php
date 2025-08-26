@@ -193,39 +193,37 @@ function mntstechnical_widgets_init() {
 add_action( 'widgets_init', 'mntstechnical_widgets_init' );
 
 /**
- * Include Service + Location in category/tag archives
+ * Include Service + Location + Project in category/tag archives
  */
 add_action('pre_get_posts', function ($q) {
     if ( $q->is_main_query() && ! is_admin() && ( $q->is_category() || $q->is_tag() ) ) {
         $types = (array) $q->get('post_type');
         if ( empty($types) || $types === ['post'] ) {
-            $q->set('post_type', ['post','service','location']);
+            $q->set('post_type', ['post','service','location','project']);
         }
     }
 });
 
 /**
- * Enable Elementor editing for Service + Location CPTs
+ * Enable Elementor editing for Service + Location + Project CPTs
  */
-function mnts_enable_elementor_for_service_location() {
-    // Elementor stores allowed post types in this option
+function mnts_enable_elementor_for_cpts() {
     $supported = get_option('elementor_cpt_support');
     if ( ! is_array($supported) ) {
-        $supported = ['post', 'page']; // Elementor defaults
+        $supported = ['post', 'page'];
     }
 
-    $needed = ['service', 'location'];
+    $needed = ['service', 'location', 'project'];
     $new = array_unique( array_merge( $supported, $needed ) );
 
     if ( $new !== $supported ) {
         update_option( 'elementor_cpt_support', $new );
     }
 
-    // Ensure these CPTs have the 'editor' feature (required by Elementor)
     add_post_type_support( 'service', 'editor' );
     add_post_type_support( 'location', 'editor' );
+    add_post_type_support( 'project', 'editor' );
 }
-// Run in a few safe spots so it sticks
-add_action( 'init', 'mnts_enable_elementor_for_service_location', 20 );
-add_action( 'admin_init', 'mnts_enable_elementor_for_service_location' );
-add_action( 'after_switch_theme', 'mnts_enable_elementor_for_service_location' );
+add_action( 'init', 'mnts_enable_elementor_for_cpts', 20 );
+add_action( 'admin_init', 'mnts_enable_elementor_for_cpts' );
+add_action( 'after_switch_theme', 'mnts_enable_elementor_for_cpts' );
