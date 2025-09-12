@@ -1,24 +1,22 @@
 <?php
 /**
- * Service CPT with depth-based permalinks (hard-coded bases)
- * URLs:
- *  /services/%postname%
- *  /sub-services/%postname%
- *  /grand-sub-services/%postname%
+ * Service CPT with hierarchy-based permalinks under /services/...
+ * Examples:
+ *  /services/parent
+ *  /services/parent/child
+ *  /services/grandparent/parent/child
  */
 
-/** HARD-CODED BASES */
+/** SINGLE ROOT BASE */
 if ( ! function_exists('mnts_service_bases') ) {
 	function mnts_service_bases() {
 		return [
-			'top'        => 'services',
-			'child'      => 'sub-services',
-			'grandchild' => 'grand-sub-services',
+			'root' => 'services',
 		];
 	}
 }
 
-/** Register CPT */
+/** Register CPT (unchanged except rewrite=false so we control rules) */
 add_action('init', function () {
 	$labels = [
 		'name'               => _x('Services', 'post type general name', 'mntstechnical'),
@@ -37,59 +35,70 @@ add_action('init', function () {
 		'not_found_in_trash' => __('No services found in Trash.', 'mntstechnical'),
 	];
 
-    $args = [
-        'labels'             => $labels,
-        'public'             => true,
-        'show_ui'            => true,
-        'show_in_menu'       => true,
-        'show_in_rest'       => true,
-        'menu_icon'          => 'dashicons-hammer',
-        'supports'           => ['title','editor','excerpt','author','thumbnail','comments','revisions','custom-fields','page-attributes'],
-        'has_archive'        => false,
-        'hierarchical'       => true,
-        'publicly_queryable' => true,
-        'query_var'          => true,
-        'rewrite'            => false,
-        'show_in_nav_menus'  => true,
-        'taxonomies'         => ['category','post_tag'],
-    ];
+	$args = [
+		'labels'             => $labels,
+		'public'             => true,
+		'show_ui'            => true,
+		'show_in_menu'       => true,
+		'show_in_rest'       => true,
+		'menu_icon'          => 'dashicons-hammer',
+		'supports'           => ['title','editor','excerpt','author','thumbnail','comments','revisions','custom-fields','page-attributes'],
+		'has_archive'        => false,
+		'hierarchical'       => true,
+		'publicly_queryable' => true,
+		'query_var'          => true,
+		'rewrite'            => false, // keep false; we inject our own rules
+		'show_in_nav_menus'  => true,
+		'taxonomies'         => ['category','post_tag'],
+	];
 
 	register_post_type('service', $args);
-    
-    add_action('init', function () {
-        register_taxonomy_for_object_type('category', 'service');
-        register_taxonomy_for_object_type('post_tag', 'service');
-    }, 11);
+
+	add_action('init', function () {
+		register_taxonomy_for_object_type('category', 'service');
+		register_taxonomy_for_object_type('post_tag', 'service');
+	}, 11);
 }, 5);
 
-/** Generate permalinks based on depth */
+/** Helper: get ancestor slugs from top-most to immediate parent */
+if ( ! function_exists('mnts_service_ancestor_slugs') ) {
+	function mnts_service_ancestor_slugs( $post_id ) {
+		$ancestors = get_post_ancestors( $post_id );     // returns array of IDs from closest parent upward
+		if ( empty( $ancestors ) ) return [];
+		$ancestors = array_reverse( $ancestors );         // top-most first
+		$slugs = [];
+		foreach ( $ancestors as $aid ) {
+			$slugs[] = get_post_field( 'post_name', $aid );
+		}
+		return array_filter( $slugs );
+	}
+}
+
+/** Generate permalinks based on full depth under /services/... */
 function mnts_service_post_type_link( $permalink, $post, $leavename, $sample ) {
 	if ( $post->post_type !== 'service' ) return $permalink;
 
-	$bases = mnts_service_bases();
+	$base  = mnts_service_bases()['root'];
+	$parts = mnts_service_ancestor_slugs( $post->ID ); // [grandparent, parent]
+	$parts[] = $post->post_name;                       // append current
+	$path  = trailingslashit( $base ) . implode( '/', $parts );
 
-	$depth = 0;
-	$parent = (int) $post->post_parent;
-	while ( $parent ) {
-		$depth++;
-		$parent = (int) get_post_field( 'post_parent', $parent );
-		if ( $depth > 20 ) break;
-	}
-
-	$base = ( $depth === 0 ) ? $bases['top'] : ( $depth === 1 ? $bases['child'] : $bases['grandchild'] );
-	$slug = $post->post_name;
-
-	return home_url( user_trailingslashit( trailingslashit( $base ) . $slug ) );
+	return home_url( user_trailingslashit( $path ) );
 }
 add_filter( 'post_type_link', 'mnts_service_post_type_link', 10, 4 );
 
-/** Inject rewrite rules during flush */
+/**
+ * Rewrite:
+ * Match any depth under /services/ and capture the last segment as the slug.
+ * NOTE: This resolves by the final slug only. Ensure slugs are unique within the 'service' CPT.
+ */
 add_filter('generate_rewrite_rules', function( $wp_rewrite ) {
 	$b = mnts_service_bases();
 	$new = [];
-	$new['^' . preg_quote($b['top'], '/')        . '/([^/]+)/?$'] = 'index.php?post_type=service&name=$matches[1]';
-	$new['^' . preg_quote($b['child'], '/')      . '/([^/]+)/?$'] = 'index.php?post_type=service&name=$matches[1]';
-	$new['^' . preg_quote($b['grandchild'], '/') . '/([^/]+)/?$'] = 'index.php?post_type=service&name=$matches[1]';
+
+	// Match: /services/foo OR /services/a/b/c/foo
+	$new['^' . preg_quote($b['root'], '/') . '/(?:.+/)?([^/]+)/?$'] = 'index.php?post_type=service&name=$matches[1]';
+
 	$wp_rewrite->rules = $new + $wp_rewrite->rules;
 	return $wp_rewrite;
 });

@@ -4,13 +4,17 @@
 - Author: Towfique Elahe
 - Author URI: https://towfique-elahe.framer.website/
 - Description: WordPress theme for MNTS Technical LLC, specializing in technical services in the UAE.
-- Version: 1.0.1
+- Version: 1.0.2
 - License: GNU General Public License v3 or later
 - License URI: http://www.gnu.org/licenses/gpl-3.0.html
 - Text Domain: mntstechnical
 - Tags: custom, business, technical services, WordPress theme, UAE, home maintenance, professional services, responsive, corporate, services, local business
 
 ## Version History
+
+### V1.0.2
+
+- Updated: Url strcuture updated for CPT - 'Service' and 'Location'.
 
 ### V1.0.1
 
