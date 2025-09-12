@@ -1,13 +1,6 @@
 <?php
-/**
- * Function File Name: Theme Support Functions
- * 
- * The file for theme support functions.
- */
 
-// Register theme support features
 function mntstechnical_advanced_theme_support() {
-    // Enable custom logo support with specific dimensions and flexibility
     add_theme_support('custom-logo', array(
         'height'      => 100,
         'width'       => 300,
@@ -15,20 +8,15 @@ function mntstechnical_advanced_theme_support() {
         'flex-width'  => true,
     ));
 
-    // Enable dynamic title tag support
     add_theme_support('title-tag');
 
-    // Enable post thumbnails (featured images)
     add_theme_support('post-thumbnails');
 
-    // Add custom image sizes
-    add_image_size('custom-thumbnail', 600, 400, true);  // 600x400 crop mode
-    add_image_size('hero-image', 1920, 800, true);       // 1920x800 crop mode
+    add_image_size('custom-thumbnail', 600, 400, true);
+    add_image_size('hero-image', 1920, 800, true);
 
-    // Enable WooCommerce support
     add_theme_support('woocommerce');
 
-    // Enable HTML5 markup support for various elements
     add_theme_support('html5', array(
         'comment-list',
         'comment-form',
@@ -39,20 +27,16 @@ function mntstechnical_advanced_theme_support() {
         'script',
     ));
 
-    // Add support for selective refresh in the customizer
     add_theme_support('customize-selective-refresh-widgets');
 
-    // Enable support for editor styles and load a custom editor stylesheet
     add_theme_support('editor-styles');
     add_editor_style('editor-style.css');
 
-    // Enable custom background support
     add_theme_support('custom-background', array(
         'default-color' => 'ffffff',
         'default-image' => '',
     ));
 
-    // Enable custom header support
     add_theme_support('custom-header', array(
         'width'         => 1920,
         'height'        => 600,
@@ -61,44 +45,29 @@ function mntstechnical_advanced_theme_support() {
         'header-text'   => false,
     ));
 
-    // Add theme support for block styles (Gutenberg)
     add_theme_support('wp-block-styles');
 
-    // Add wide and full alignment support for Gutenberg blocks
     add_theme_support('align-wide');
 
-    // Add support for responsive embedded content
     add_theme_support('responsive-embeds');
 	
-	// Add support for widgets
 	add_theme_support( 'widgets' );
 }
 add_action('after_setup_theme', 'mntstechnical_advanced_theme_support');
 
-/**
- * Add Elementor Support
- */
 function mntstechnical_add_elementor_support() {
-    // Ensure Elementor can work with your theme
     add_theme_support('elementor');
 
-    // Register locations for Elementor Theme Builder (e.g., header, footer)
     if (class_exists('Elementor\ThemeManager')) {
         add_action('elementor/theme/register_locations', function($elementor_theme_manager) {
             $elementor_theme_manager->register_all_core_location();
         });
     }
 
-    // Enable custom breakpoints for Elementor if needed
     add_theme_support('elementor-custom-breakpoints');
 }
 add_action('after_setup_theme', 'mntstechnical_add_elementor_support');
 
-/**
- * Menu Registration and Custom Menu Functions
- */
-
-// Register theme menus
 function mntstechnical_register_menus() {
     register_nav_menus([
         'primary-menu'   => __('Primary Menu', 'mntstechnical'),
@@ -110,9 +79,6 @@ function mntstechnical_register_menus() {
 }
 add_action('init', 'mntstechnical_register_menus');
 
-/**
- * Display a fallback menu when no menu is assigned.
- */
 function mntstechnical_fallback_menu() {
     echo '<ul class="fallback-menu">';
     echo '<li><a href="' . esc_url(home_url('/')) . '">' . __('Home', 'mntstechnical') . '</a></li>';
@@ -121,17 +87,12 @@ function mntstechnical_fallback_menu() {
     echo '</ul>';
 }
 
-/**
- * Custom Walker for Nav Menus (for adding custom classes and structure).
- */
 class mntstechnical_Custom_Nav_Walker extends Walker_Nav_Menu {
-    // Start level (for submenus)
     function start_lvl(&$output, $depth = 0, $args = null) {
         $indent = str_repeat("\t", $depth);
         $output .= "\n$indent<ul class=\"sub-menu\">\n";
     }
 
-    // Start element (for menu items)
     function start_el(&$output, $item, $depth = 0, $args = null, $id = 0) {
         $classes = empty($item->classes) ? [] : (array) $item->classes;
         $classes[] = 'menu-item-' . $item->ID;
@@ -156,11 +117,6 @@ class mntstechnical_Custom_Nav_Walker extends Walker_Nav_Menu {
     }
 }
 
-/**
- * Display a menu with optional fallback and custom walker.
- *
- * @param string $theme_location The registered menu location.
- */
 function mntstechnical_display_menu($theme_location) {
     if (has_nav_menu($theme_location)) {
         wp_nav_menu([
@@ -176,9 +132,6 @@ function mntstechnical_display_menu($theme_location) {
     }
 }
 
-/**
- * Registered widget area
- */
 function mntstechnical_widgets_init() {
     register_sidebar( array(
         'name'          => __( 'Main Sidebar', 'mntstechnical' ),
@@ -192,9 +145,6 @@ function mntstechnical_widgets_init() {
 }
 add_action( 'widgets_init', 'mntstechnical_widgets_init' );
 
-/**
- * Include Service + Location + Project in category/tag archives
- */
 add_action('pre_get_posts', function ($q) {
     if ( $q->is_main_query() && ! is_admin() && ( $q->is_category() || $q->is_tag() ) ) {
         $types = (array) $q->get('post_type');
@@ -204,9 +154,6 @@ add_action('pre_get_posts', function ($q) {
     }
 });
 
-/**
- * Enable Elementor editing for Service + Location + Project CPTs
- */
 function mnts_enable_elementor_for_cpts() {
     $supported = get_option('elementor_cpt_support');
     if ( ! is_array($supported) ) {

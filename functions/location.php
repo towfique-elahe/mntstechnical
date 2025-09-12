@@ -1,13 +1,4 @@
 <?php
-/**
- * Location CPT with hierarchy-based permalinks under /locations/...
- * Examples:
- *  /locations/parent
- *  /locations/parent/child
- *  /locations/grandparent/parent/child
- */
-
-/** SINGLE ROOT BASE */
 if ( ! function_exists('mnts_location_bases') ) {
 	function mnts_location_bases() {
 		return [
@@ -16,7 +7,6 @@ if ( ! function_exists('mnts_location_bases') ) {
 	}
 }
 
-/** Register CPT (keep rewrite=false; we inject our own rules) */
 add_action('init', function () {
 	$labels = [
 		'name'               => _x('Locations', 'post type general name', 'mntstechnical'),
@@ -47,7 +37,7 @@ add_action('init', function () {
 		'hierarchical'       => true,
 		'publicly_queryable' => true,
 		'query_var'          => true,
-		'rewrite'            => false, // custom rules below
+		'rewrite'            => false,
 		'show_in_nav_menus'  => true,
 		'taxonomies'         => ['category','post_tag'],
 	];
@@ -60,12 +50,11 @@ add_action('init', function () {
 	}, 11);
 }, 5);
 
-/** Helper: ancestor slugs from top-most to immediate parent */
 if ( ! function_exists('mnts_location_ancestor_slugs') ) {
 	function mnts_location_ancestor_slugs( $post_id ) {
-		$ancestors = get_post_ancestors( $post_id ); // closest parent upward
+		$ancestors = get_post_ancestors( $post_id );
 		if ( empty( $ancestors ) ) return [];
-		$ancestors = array_reverse( $ancestors );     // top-most first
+		$ancestors = array_reverse( $ancestors );
 		$slugs = [];
 		foreach ( $ancestors as $aid ) {
 			$slugs[] = get_post_field( 'post_name', $aid );
@@ -74,7 +63,6 @@ if ( ! function_exists('mnts_location_ancestor_slugs') ) {
 	}
 }
 
-/** Generate permalinks based on full depth under /locations/... */
 function mnts_location_post_type_link( $permalink, $post, $leavename, $sample ) {
 	if ( $post->post_type !== 'location' ) return $permalink;
 
@@ -87,23 +75,16 @@ function mnts_location_post_type_link( $permalink, $post, $leavename, $sample ) 
 }
 add_filter( 'post_type_link', 'mnts_location_post_type_link', 10, 4 );
 
-/**
- * Rewrite:
- * Match any depth under /locations/ and resolve by final slug.
- * NOTE: Ensure 'location' slugs are globally unique to avoid collisions.
- */
 add_filter('generate_rewrite_rules', function( $wp_rewrite ) {
 	$b = mnts_location_bases();
 	$new = [];
 
-	// Matches /locations/foo or /locations/a/b/c/foo
 	$new['^' . preg_quote($b['root'], '/') . '/(?:.+/)?([^/]+)/?$'] = 'index.php?post_type=location&name=$matches[1]';
 
 	$wp_rewrite->rules = $new + $wp_rewrite->rules;
 	return $wp_rewrite;
 });
 
-/** Flush once on theme switch */
 add_action('after_switch_theme', function () {
 	delete_option('rewrite_rules');
 	flush_rewrite_rules(false);

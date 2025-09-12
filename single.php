@@ -1,14 +1,4 @@
-<?php
-/**
- * Template Name: Single Post
- * 
- * The template for displaying all single posts.
- * 
- * @package mntstechnical
- */
-
-get_header(); // Include header.php
-?>
+<?php get_header(); ?>
 
 <main id="main-content" class="site-main">
     <div class="container">

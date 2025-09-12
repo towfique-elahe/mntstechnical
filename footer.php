@@ -1,13 +1,3 @@
-<?php
-/**
- * Template Name: Footer
- * 
- * The template for displaying footer.
- * 
- * @package mntstechnical
- */
-?>
-
 <footer id="site-footer" class="site-footer">
     <?php if (!function_exists('elementor_theme_do_location') || !elementor_theme_do_location('footer')) : ?>
     <div class="container">

@@ -1,14 +1,4 @@
-<?php
-/**
- * Template Name: 404 Error Page
- * 
- * The template for displaying 404 pages (Not Found).
- * 
- * @package mntstechnical
- */
-
-get_header(); // Include header.php
-?>
+<?php get_header(); ?>
 
 <main id="main-content" class="site-main">
     <div class="container">

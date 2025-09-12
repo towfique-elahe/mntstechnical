@@ -1,14 +1,4 @@
-<?php
-/**
- * Template Name: Archive Page
- * 
- * The template for displaying archive pages.
- * 
- * @package mntstechnical
- */
-
-get_header(); // Include header.php
-?>
+<?php get_header(); ?>
 
 <main id="main-content" class="site-main">
     <div class="container">

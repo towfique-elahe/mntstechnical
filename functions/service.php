@@ -1,13 +1,5 @@
 <?php
-/**
- * Service CPT with hierarchy-based permalinks under /services/...
- * Examples:
- *  /services/parent
- *  /services/parent/child
- *  /services/grandparent/parent/child
- */
 
-/** SINGLE ROOT BASE */
 if ( ! function_exists('mnts_service_bases') ) {
 	function mnts_service_bases() {
 		return [
@@ -16,7 +8,6 @@ if ( ! function_exists('mnts_service_bases') ) {
 	}
 }
 
-/** Register CPT (unchanged except rewrite=false so we control rules) */
 add_action('init', function () {
 	$labels = [
 		'name'               => _x('Services', 'post type general name', 'mntstechnical'),
@@ -47,7 +38,7 @@ add_action('init', function () {
 		'hierarchical'       => true,
 		'publicly_queryable' => true,
 		'query_var'          => true,
-		'rewrite'            => false, // keep false; we inject our own rules
+		'rewrite'            => false,
 		'show_in_nav_menus'  => true,
 		'taxonomies'         => ['category','post_tag'],
 	];
@@ -60,12 +51,11 @@ add_action('init', function () {
 	}, 11);
 }, 5);
 
-/** Helper: get ancestor slugs from top-most to immediate parent */
 if ( ! function_exists('mnts_service_ancestor_slugs') ) {
 	function mnts_service_ancestor_slugs( $post_id ) {
-		$ancestors = get_post_ancestors( $post_id );     // returns array of IDs from closest parent upward
+		$ancestors = get_post_ancestors( $post_id );
 		if ( empty( $ancestors ) ) return [];
-		$ancestors = array_reverse( $ancestors );         // top-most first
+		$ancestors = array_reverse( $ancestors );
 		$slugs = [];
 		foreach ( $ancestors as $aid ) {
 			$slugs[] = get_post_field( 'post_name', $aid );
@@ -74,36 +64,28 @@ if ( ! function_exists('mnts_service_ancestor_slugs') ) {
 	}
 }
 
-/** Generate permalinks based on full depth under /services/... */
 function mnts_service_post_type_link( $permalink, $post, $leavename, $sample ) {
 	if ( $post->post_type !== 'service' ) return $permalink;
 
 	$base  = mnts_service_bases()['root'];
-	$parts = mnts_service_ancestor_slugs( $post->ID ); // [grandparent, parent]
-	$parts[] = $post->post_name;                       // append current
+	$parts = mnts_service_ancestor_slugs( $post->ID );
+	$parts[] = $post->post_name;
 	$path  = trailingslashit( $base ) . implode( '/', $parts );
 
 	return home_url( user_trailingslashit( $path ) );
 }
 add_filter( 'post_type_link', 'mnts_service_post_type_link', 10, 4 );
 
-/**
- * Rewrite:
- * Match any depth under /services/ and capture the last segment as the slug.
- * NOTE: This resolves by the final slug only. Ensure slugs are unique within the 'service' CPT.
- */
 add_filter('generate_rewrite_rules', function( $wp_rewrite ) {
 	$b = mnts_service_bases();
 	$new = [];
 
-	// Match: /services/foo OR /services/a/b/c/foo
 	$new['^' . preg_quote($b['root'], '/') . '/(?:.+/)?([^/]+)/?$'] = 'index.php?post_type=service&name=$matches[1]';
 
 	$wp_rewrite->rules = $new + $wp_rewrite->rules;
 	return $wp_rewrite;
 });
 
-/** Flush once on theme switch (so rules exist) */
 add_action('after_switch_theme', function () {
 	delete_option('rewrite_rules');
 	flush_rewrite_rules(false);

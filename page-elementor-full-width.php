@@ -1,14 +1,4 @@
-<?php
-/**
- * Template Name: Elementor Full Width
- * 
- * A full-width template for Elementor, including the header and footer.
- * 
- * @package mntstechnical
- */
-
-get_header(); // Include header.php
-?>
+<?php get_header(); ?>
 
 <main id="main-content" class="site-main full-width">
     <?php if (have_posts()) : ?>

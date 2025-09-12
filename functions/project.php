@@ -1,8 +1,4 @@
 <?php
-/**
- * Project CPT
- * URL: /projects/%postname%
- */
 
 add_action('init', function () {
     $labels = [

@@ -1,11 +1,4 @@
 <?php
-/**
- * Template Name: Elementor Canvas
- * 
- * A blank template for Elementor to provide a full-width, header-free, and footer-free layout.
- * 
- * @package mntstechnical
- */
 
 if (have_posts()) {
     while (have_posts()) {

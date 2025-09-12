@@ -1,12 +1,3 @@
-<?php
-/**
- * Template Name: Header
- * 
- * The template for displaying header.
- * 
- * @package mntstechnical
- */
-?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 
@@ -43,14 +34,12 @@
                         ?>
                 </nav>
 
-                <!-- Mobile Menu Button -->
                 <button class="mobile-menu-toggle" aria-label="Toggle Mobile Menu">
                     <span class="hamburger-icon"></span>
                 </button>
             </div>
         </div>
 
-        <!-- Mobile Menu -->
         <nav id="mobile-navigation" class="mobile-navigation" aria-label="Mobile Navigation">
             <?php
                 wp_nav_menu([
