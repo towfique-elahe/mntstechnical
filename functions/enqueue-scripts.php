@@ -30,12 +30,35 @@ function mntstechnical_register_scripts() {
 
     wp_enqueue_script('jquery');
 
-    wp_enqueue_script('ionicons-esm', 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js', [], null, true);
+    wp_enqueue_script(
+        'ionicons-esm',
+        'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js',
+        [],
+        null,
+        true
+    );
 
-    wp_enqueue_script('ionicons-nomodule', 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js', [], null, true);
+    wp_enqueue_script(
+        'ionicons-nomodule',
+        'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js',
+        [],
+        null,
+        true
+    );
+
+    $scripts = [
+        'mntstechnical-main-js' => 'assets/js/main.js',
+        // add more scripts here as needed
+    ];
 
     foreach ($scripts as $handle => $path) {
-        wp_enqueue_script($handle, get_template_directory_uri() . '/' . $path, [], $version, true);
+        wp_enqueue_script(
+            $handle,
+            get_template_directory_uri() . '/' . $path,
+            [],
+            $version,
+            true
+        );
     }
 }
 add_action('wp_enqueue_scripts', 'mntstechnical_register_scripts');
